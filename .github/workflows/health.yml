@@ -1,0 +1,21 @@
+# Every 15 minutes: check the YumYum service and website answer correctly.
+# A failed run makes GitHub email the account owner. No secrets are used.
+name: YumYum health
+on:
+  schedule:
+    - cron: "7,22,37,52 * * * *"
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: health
+  cancel-in-progress: false
+jobs:
+  probe:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Check service and website (one retry after 60 s to skip brief blips)
+        run: |
+          curl -fsSL "https://raw.githubusercontent.com/${GITHUB_REPOSITORY}/${GITHUB_SHA}/ops/release_probe.py" -o probe.py
+          python3 probe.py || { sleep 60; python3 probe.py; }
