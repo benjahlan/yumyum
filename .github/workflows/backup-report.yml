@@ -1,0 +1,26 @@
+# The nightly backup job on the server reports here. A "failed" report fails this run,
+# which makes GitHub email the account owner.
+name: Backup report
+on:
+  workflow_dispatch:
+    inputs:
+      status:
+        description: ok or failed
+        required: true
+      detail:
+        description: short reason (no secrets)
+        required: false
+permissions:
+  contents: read
+jobs:
+  report:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 2
+    steps:
+      - name: Record result
+        env:
+          STATUS: ${{ inputs.status }}
+          DETAIL: ${{ inputs.detail }}
+        run: |
+          echo "Backup status: $STATUS — $DETAIL"
+          test "$STATUS" = "ok"

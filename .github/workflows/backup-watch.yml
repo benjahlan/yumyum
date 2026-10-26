@@ -1,0 +1,24 @@
+# Daily: if no successful backup report arrived in the last 36 hours, fail (GitHub emails the owner).
+# Catches the case where the server or its nightly job silently stops.
+name: Backup watch
+on:
+  schedule:
+    - cron: "17 6 * * *"
+  workflow_dispatch:
+permissions:
+  actions: read
+jobs:
+  watch:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 2
+    steps:
+      - name: Look for a recent successful backup
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          last=$(gh api "repos/${GITHUB_REPOSITORY}/actions/workflows/backup-report.yml/runs?status=success&per_page=1" --jq '.workflow_runs[0].created_at // empty')
+          echo "Last successful backup report: ${last:-none}"
+          test -n "$last"
+          age=$(( $(date +%s) - $(date -d "$last" +%s) ))
+          echo "Age: $((age/3600)) hours"
+          test "$age" -lt 129600
