@@ -14,4 +14,6 @@
   get('link').value=canonical;
   if(kind==='profile')get('description').textContent='افتح الحساب في يم يم وسجّل الدخول للمتابعة.';
   get('copy').addEventListener('click',async()=>{try{await navigator.clipboard.writeText(canonical);get('status').textContent='تم نسخ الرابط';}catch{get('link').focus();get('link').select();get('status').textContent='حدّد الرابط أعلاه وانسخه.';}});
+  // Watch-only: a post its cook opened to guests plays right here; anything else asks to sign in in the app.
+  if(kind==='post'&&window.YYWatch)window.YYWatch.mountShare(id,get('open').href).then(r=>{if(!r.shown&&r.memberOnly)get('description').textContent='سجّل الدخول في التطبيق لرؤية هذا المنشور.';});
 })();
